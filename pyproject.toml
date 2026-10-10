@@ -1,0 +1,30 @@
+[project]
+name = "research-harness"
+version = "0.1.0"
+description = "Local research-agent harness (LangGraph + Streamlit): query planning, web search, page fetch, capped loop, cited answer"
+readme = "README.md"
+authors = [
+    { name = "MohammadJavod Naseri", email = "mohammadjavodnaseri110.n@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "langgraph>=1.2.14",
+    "markitdown",
+    "playwright",
+    "python-dotenv",
+    "serpapi",
+    "streamlit>=1.65.0",
+]
+
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true
+
+[build-system]
+requires = ["uv_build>=0.12.2,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
