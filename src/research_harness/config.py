@@ -6,7 +6,7 @@ information is still thin (then the answer states the limitation).
 """
 
 MAX_ROUNDS = 3
-RESULTS_PER_QUERY = 3
+RESULTS_PER_QUERY = 3  # per query; the extractor keeps only the first MAX_SOURCES
 MAX_SOURCES = 5
 MIN_USEFUL_SOURCES = 3
 MAX_CHARS_PER_PAGE = 30_000
