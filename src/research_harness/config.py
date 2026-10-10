@@ -8,6 +8,7 @@ information is still thin (then the answer states the limitation).
 MAX_ROUNDS = 3
 RESULTS_PER_QUERY = 3
 MAX_SOURCES = 5
+MIN_USEFUL_SOURCES = 3
 MAX_CHARS_PER_PAGE = 30_000
 MAX_CHARS_TOTAL = 250_000
 # Budget math: 5 sources x 30k = 150k <= 250k total, so the extractor model
