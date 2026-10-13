@@ -8,7 +8,6 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "langchain-openai>=1.7.0",
     "langgraph>=1.2.14",
     "markitdown",
     "playwright",

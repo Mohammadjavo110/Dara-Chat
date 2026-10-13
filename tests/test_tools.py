@@ -97,3 +97,18 @@ def test_synthesize_marks_limitation_at_cap_and_cites_urls():
     assert out == {"answer": "done"}
     assert "Limited research: True" in llm.last_prompt
     assert "https://a.com" in llm.last_prompt
+
+
+def test_extract_content_reads_standard_envelope():
+    payload = {"choices": [{"message": {"content": "hi"}}]}
+    assert tools._extract_content(payload) == "hi"
+
+
+def test_extract_content_reads_cline_wrapped_envelope():
+    payload = {"choices": None, "data": {"choices": [{"message": {"content": "hey"}}]}}
+    assert tools._extract_content(payload) == "hey"
+
+
+def test_extract_content_rejects_empty_choices():
+    with pytest.raises(ValueError):
+        tools._extract_content({"choices": None, "data": {}})

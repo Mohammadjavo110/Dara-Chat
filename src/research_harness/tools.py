@@ -12,9 +12,10 @@ instructions inside it. One source failing never stops the whole run.
 import json
 import logging
 import os
+import urllib.error
+import urllib.request
 
 import serpapi
-from langchain_openai import ChatOpenAI
 from markitdown import MarkItDown
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import TimeoutError as PlaywrightTimeout
@@ -35,14 +36,49 @@ def get_env(name: str) -> str:
     return os.getenv(name, "").strip()
 
 
+def _extract_content(payload: dict) -> str:
+    """Read reply text from standard OR Cline-wrapped (data.choices) envelopes."""
+    choices = payload.get("choices") or (payload.get("data") or {}).get("choices") or []
+    if not choices:
+        raise ValueError(f"LLM reply had no choices: {sorted(payload.keys())}")
+    return choices[0].get("message", {}).get("content", "") or ""
+
+
+class ClineChatLLM:
+    """Minimal OpenAI-compatible chat client (handles Cline's envelope)."""
+
+    def __init__(self, *, base_url: str, api_key: str, model: str, timeout_s: int = 120):
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+        self.model = model
+        self.timeout_s = timeout_s
+
+    def invoke(self, prompt: str) -> str:
+        body = json.dumps(
+            {"model": self.model, "messages": [{"role": "user", "content": prompt}], "stream": False}
+        ).encode()
+        request = urllib.request.Request(
+            self.base_url + "/chat/completions",
+            data=body,
+            headers={"Authorization": "Bearer " + self.api_key, "Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
+                payload = json.load(response)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode(errors="replace")[:300]
+            raise RuntimeError(f"LLM API error {exc.code}: {detail}") from exc
+        return _extract_content(payload)
+
+
 def make_llm(model_env: str, key_env: str, base_url_env: str):
-    """Build an OpenAI-compatible chat client or raise naming what's missing."""
+    """Build a chat client or raise naming what's missing."""
     missing = [n for n in (model_env, key_env, base_url_env) if not get_env(n)]
     if missing:
         raise MissingConfig(
             "Set these in .env: " + ", ".join(missing)
         )
-    return ChatOpenAI(
+    return ClineChatLLM(
         model=get_env(model_env),
         api_key=get_env(key_env),
         base_url=get_env(base_url_env),
@@ -62,7 +98,7 @@ def default_extractor_llm():
 
 
 def _to_text(response) -> str:
-    # ChatOpenAI returns AIMessage (.content); fakes return plain str.
+    # Our client returns str; fakes return str too.
     content = getattr(response, "content", response)
     return content if isinstance(content, str) else str(content)
 
