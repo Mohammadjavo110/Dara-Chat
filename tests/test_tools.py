@@ -112,3 +112,10 @@ def test_extract_content_reads_cline_wrapped_envelope():
 def test_extract_content_rejects_empty_choices():
     with pytest.raises(ValueError):
         tools._extract_content({"choices": None, "data": {}})
+
+
+def test_html_to_markdown_keeps_headings_and_links():
+    html = '<h1>Title</h1><p>See <a href="https://x.com">X</a></p>'
+    md = tools._html_to_markdown(html, "https://x.com")
+    assert "Title" in md
+    assert "https://x.com" in md

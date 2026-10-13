@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 
 import serpapi
-from markitdown import MarkItDown
+from markitdown import MarkItDown, StreamInfo
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import TimeoutError as PlaywrightTimeout
 from playwright.sync_api import sync_playwright
@@ -153,6 +153,20 @@ def search(state, client=None):
     return {"fetched": state["fetched"] + found, "rounds": state["rounds"] + 1}
 
 
+def _html_to_markdown(html: str, url: str) -> str:
+    """Convert a rendered HTML string to Markdown (pure, no browser)."""
+    import io
+
+    global _md
+    if _md is None:
+        _md = MarkItDown()
+    result = _md.convert_stream(
+        io.BytesIO(html.encode("utf-8")),
+        stream_info=StreamInfo(mimetype="text/html", extension=".html", url=url),
+    )
+    return result.markdown
+
+
 def fetch_page(url: str):
     """Render with Firefox, convert to bounded Markdown; None on any failure."""
     try:
@@ -167,7 +181,7 @@ def fetch_page(url: str):
         global _md
         if _md is None:
             _md = MarkItDown()
-        markdown = _md.convert_string(html, url=url).markdown
+        markdown = _html_to_markdown(html, url)
         return markdown[: config.MAX_CHARS_PER_PAGE] or None
     except (PlaywrightTimeout, PlaywrightError, Exception) as exc:
         # Timeout, unreachable host, missing browser files, bad HTML: skip it.
