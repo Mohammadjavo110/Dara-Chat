@@ -1,0 +1,16 @@
+flowchart TD
+    START(["START"]) --> PlanQ["plan_queries<br/>2-3 search queries"]
+    PlanQ --> Search["search<br/>SerpApi top links"]
+    Search --> Fetch["fetch<br/>page markdown"]
+    Fetch --> Extract["extract<br/>query-relevant excerpts"]
+    Extract --> Decide{"decide<br/>rounds &lt; 3<br/>useful &lt; 3?"}
+    Decide -->|yes| Search
+    Decide -->|no| Synth["synthesize<br/>cited answer"]
+    Synth --> DONE(["END"])
+
+    classDef node fill:#90EE90,stroke:#333,stroke-width:2px,color:darkgreen
+    classDef gate fill:#FFD700,stroke:#333,stroke-width:2px,color:black
+    classDef term fill:#87CEEB,stroke:#333,stroke-width:2px,color:darkblue
+    class PlanQ,Search,Fetch,Extract,Synth node
+    class Decide gate
+    class START,DONE term

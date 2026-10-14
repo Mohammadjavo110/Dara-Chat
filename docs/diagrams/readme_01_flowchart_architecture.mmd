@@ -1,0 +1,20 @@
+flowchart TD
+    User(["User"]) --> UI["app.py<br/>Streamlit UI"]
+    UI --> Graph["graph.py<br/>StateGraph"]
+    Graph --> State["state.py<br/>ResearchState"]
+    Graph --> Plan["plan_queries"]
+    Graph --> Search["search"]
+    Graph --> Fetch["fetch"]
+    Graph --> Extract["extract"]
+    Graph --> Synth["synthesize"]
+    Search --> SerpAPI["SerpApi<br/>web search"]
+    Fetch --> Pages["Web pages<br/>Firefox + MarkItDown"]
+    Extract --> ExtLLM["Extractor LLM<br/>Cline GLM"]
+    Synth --> MainLLM["Main LLM<br/>Cline DeepSeek"]
+
+    classDef ui fill:#87CEEB,stroke:#333,stroke-width:2px,color:darkblue
+    classDef core fill:#90EE90,stroke:#333,stroke-width:2px,color:darkgreen
+    classDef ext fill:#F0F0F0,stroke:#333,stroke-width:2px,color:black
+    class User,UI ui
+    class Graph,State,Plan,Search,Fetch,Extract,Synth core
+    class SerpAPI,Pages,ExtLLM,MainLLM ext
