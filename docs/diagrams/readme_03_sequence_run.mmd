@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant U as User
+    participant UI as Streamlit app
+    participant G as LangGraph
+    participant S as SerpApi
+    participant W as Web pages
+    participant L as Cline LLMs
+
+    U->>UI: research question
+    activate UI
+    UI->>G: invoke ResearchState
+    activate G
+    G->>L: plan_queries
+    L-->>G: 2-3 queries
+    loop until enough sources or round cap
+        G->>S: search per query
+        S-->>G: links
+        G->>W: fetch pages
+        W-->>G: markdown
+        G->>L: extract excerpts
+        L-->>G: extracted sources
+    end
+    G->>L: synthesize answer
+    L-->>G: cited answer
+    G-->>UI: result + steps
+    deactivate G
+    UI-->>U: answer, links, history
+    deactivate UI
