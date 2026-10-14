@@ -1,4 +1,6 @@
-# Research Harness â€” local research agent (LangGraph + Streamlit)
+# Dara-Chat
+
+# Research Harness GÇö local research agent (LangGraph + Streamlit)
 
 > Status: phase 0 (scaffold). Graph, tools and UI land in phases 1-3.
 
@@ -21,18 +23,18 @@ Needs: Python >= 3.13, `uv`, Firefox browser files (`make install` fetches them)
 
 ## Make commands
 
-- `make install` â€” `uv sync` + Playwright Firefox
-- `make test` â€” offline `pytest` (no network/services)
-- `make run` â€” Streamlit UI (from phase 3)
+- `make install` GÇö `uv sync` + Playwright Firefox
+- `make test` GÇö offline `pytest` (no network/services)
+- `make run` GÇö Streamlit UI (from phase 3)
 
 ## Structure
 
-- `src/research_harness/config.py` â€” caps, timeouts, env key names
-- `src/research_harness/state.py` â€” shared `ResearchState`
-- `src/research_harness/graph.py` â€” LangGraph wiring (phase 1)
-- `src/research_harness/tools.py` â€” search/fetch/extract (phase 2)
-- `src/research_harness/app.py` â€” Streamlit UI (phase 3)
-- `tests/` â€” offline harness tests (stop-after-cap behavior test lands in phase 1 with `graph.py`)
+- `src/research_harness/config.py` GÇö caps, timeouts, env key names
+- `src/research_harness/state.py` GÇö shared `ResearchState`
+- `src/research_harness/graph.py` GÇö LangGraph wiring (phase 1)
+- `src/research_harness/tools.py` GÇö search/fetch/extract (phase 2)
+- `src/research_harness/app.py` GÇö Streamlit UI (phase 3)
+- `tests/` GÇö offline harness tests (stop-after-cap behavior test lands in phase 1 with `graph.py`)
 
 ## Graph flow
 
