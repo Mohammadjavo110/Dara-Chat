@@ -6,7 +6,7 @@ import time
 
 import streamlit as st
 
-from research_harness import tools
+from research_harness import history, tools
 from research_harness.graph import build_graph
 
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +19,7 @@ DARK_CSS = """
 @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
 header[data-testid="stHeader"] { background: transparent; }
 div[data-testid="stToolbar"], footer { visibility: hidden; }
+button[data-testid="stExpandSidebarButton"] { visibility: visible !important; }
 .stApp { font-family: 'Inter', 'Vazirmatn', Tahoma, sans-serif; }
 [data-testid="stMainBlockContainer"] { max-width: 780px; }
 .hero { text-align: center; margin: 14vh auto 1.4rem auto; }
@@ -112,10 +113,32 @@ with st.sidebar:
         st.session_state.current = None
         st.rerun()
     st.caption("History")
-    for i, th in enumerate(reversed(st.session_state.threads[-10:])):
-        if st.button(th["question"][:40], key=f"hist-{i}", use_container_width=True):
-            st.session_state.current = th
-            st.rerun()
+    threads = st.session_state.threads
+    for idx, th in history.visible_history(threads):
+        label, meta = history.format_entry(th)
+        is_cur = th is st.session_state.current
+        row = st.columns([5, 1])
+        with row[0]:
+            if st.button(
+                ("› " if is_cur else "") + (label or "(untitled)"),
+                key=f"hist-{idx}",
+                use_container_width=True,
+                disabled=is_cur,
+            ):
+                st.session_state.current = th
+                st.rerun()
+        with row[1]:
+            if st.button("✕", key=f"del-{idx}"):
+                st.session_state.threads = history.remove_at(threads, idx)
+                if is_cur:
+                    st.session_state.current = None
+                st.rerun()
+        if meta:
+            st.caption(meta)
+    if threads and st.button("Clear all", key="hist-clear", use_container_width=True):
+        st.session_state.threads = []
+        st.session_state.current = None
+        st.rerun()
 
 cur = st.session_state.current
 
@@ -127,6 +150,7 @@ if cur is None:
     if submitted and q and q.strip():
         try:
             res = run_research(q.strip())
+            res["created_at"] = time.time()
             st.session_state.threads.append(res)
             st.session_state.current = res
             st.rerun()
@@ -157,6 +181,7 @@ else:
     if follow and follow.strip():
         try:
             res = run_research(follow.strip())
+            res["created_at"] = time.time()
             st.session_state.threads.append(res)
             st.session_state.current = res
             st.rerun()
