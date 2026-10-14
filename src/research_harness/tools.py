@@ -104,11 +104,11 @@ def _to_text(response) -> str:
 
 
 def plan_queries(state, llm=None):
-    """Turn the user question into 2-3 short English search queries."""
+    """Turn the user question into 2-3 short English and Persian search queries."""
     llm = llm or default_llm()
     prompt = (
         f"User question: {state['question']}\n"
-        "Write 2-3 short English web-search queries for it.\n"
+        "Write 2-3 short English and Persian web-search queries for it.\n"
         'Reply with ONLY a JSON list of strings, e.g. ["q1", "q2"].'
     )
     try:
@@ -255,6 +255,10 @@ def synthesize(state, llm=None):
         "Use ONLY these sources. Cite real URLs from them; never invent links.\n"
         "If sources conflict or lack information, say so clearly and do not "
         "state a firm conclusion.\n"
+        "Reply in the same language as the Question "
+        "(Persian if the question is Persian).\n"
+        "Write ALL math in LaTeX: inline as $...$, display as $$...$$, "
+        "never as [ ... ] or plain unicode. Keep formulas LTR.\n"
         f"Limited research: {limited}\n"
         "If limited research is True, state that the research hit its cap.\n"
         "Sources:\n" + ("\n".join(lines) if lines else "(no sources were read)")
