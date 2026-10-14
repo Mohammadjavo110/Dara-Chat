@@ -69,22 +69,35 @@ def render_answer(text: str) -> str:
 def run_research(question: str) -> dict:
     main_llm = tools.default_llm()
     extractor_llm = tools.default_extractor_llm()
-    app = build_graph(
-        plan_queries=lambda s: tools.plan_queries(s, llm=main_llm),
-        search=tools.search,
-        fetch=tools.fetch,
-        extract=lambda s: tools.extract(s, llm=extractor_llm),
-        synthesize=lambda s: tools.synthesize(s, llm=main_llm),
-    )
+    steps: list[str] = []
     t0 = time.time()
-    with st.status("Researching...", expanded=False) as status:
-        status.write("Searching and reading sources...")
+    with st.status("Researching...", expanded=True) as status:
+        status.write("Planning queries...")
+
+        def on_query(q: str) -> None:
+            msg = f"Searching: {q}"
+            steps.append(msg)
+            status.write(msg)
+
+        def on_fetch(n: int) -> None:
+            msg = f"Read {n} pages"
+            steps.append(msg)
+            status.write(msg)
+
+        app = build_graph(
+            plan_queries=lambda s: tools.plan_queries(s, llm=main_llm),
+            search=lambda s: tools.search(s, on_progress=on_query),
+            fetch=lambda s: tools.fetch(s, on_progress=on_fetch),
+            extract=lambda s: tools.extract(s, llm=extractor_llm),
+            synthesize=lambda s: tools.synthesize(s, llm=main_llm),
+        )
         result = app.invoke(
             {"question": question, "queries": [], "fetched": [], "extracted": [], "rounds": 0, "answer": ""}
         )
-        status.update(label="Done", state="complete")
+        status.update(label=f"Done — {len(steps)} steps", state="complete")
     result["duration_s"] = time.time() - t0
     result["question"] = question
+    result["steps"] = steps
     return result
 
 
