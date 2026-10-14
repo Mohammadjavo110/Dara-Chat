@@ -127,11 +127,13 @@ def _search_client():
     return serpapi.Client(api_key=key)
 
 
-def search(state, client=None):
+def search(state, client=None, on_progress=None):
     """Run each planned query, keep top links; one bad query never kills the run."""
     client = client or _search_client()
     found = []
     for query in state["queries"]:
+        if on_progress is not None:
+            on_progress(query)
         try:
             results = client.search(engine="google", q=query)
         except Exception as exc:
@@ -189,7 +191,7 @@ def fetch_page(url: str):
         return None
 
 
-def fetch(state, page_fn=None):
+def fetch(state, page_fn=None, on_progress=None):
     """Fill `text` for each fetched URL; failures are dropped, never fatal."""
     read = page_fn or fetch_page
     out = []
@@ -202,6 +204,8 @@ def fetch(state, page_fn=None):
         if not text:
             continue
         out.append({**item, "text": text[: config.MAX_CHARS_PER_PAGE]})
+        if on_progress is not None:
+            on_progress(len(out))
     return {"fetched": out}
 
 
